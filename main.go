@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"math"
 	"net/http"
 	"os"
 
@@ -88,6 +89,17 @@ func getSHA(c echo.Context) error {
 	return c.String(http.StatusOK, data)
 }
 
+func thrash(c echo.Context) error {
+	c.Response().Header().Add("Content-Type", "text/plain")
+
+	var x float64 = 0.0001
+	for i := 0; i <= 1000000; i++ {
+		x += math.Sqrt(x)
+	}
+
+	return c.String(http.StatusOK, fmt.Sprintf("%f", x))
+}
+
 func ok(c echo.Context) error {
 	c.Response().Header().Add("Content-Type", "text/plain")
 	return c.String(http.StatusOK, "ok!")
@@ -122,6 +134,7 @@ func main() {
 
 	e.GET("/ok", ok)
 	e.GET("/sha256", getSHA)
+	e.GET("/thrash", thrash)
 
 	e.Logger.Fatal(e.Start(":8080"))
 }
