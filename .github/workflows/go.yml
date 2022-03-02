@@ -28,11 +28,11 @@ jobs:
       run: |
         go get -v -t -d ./...
         CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o webapp
-        tar -czf release-${{ env.RELEASE_VERSION }}.linux-amd64.tar.gz api
+        tar -czf release-${{ env.RELEASE_VERSION }}.linux-amd64.tar.gz webapp
         CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o webapp
-        tar -czf release-${{ env.RELEASE_VERSION }}.linux-arm64.tar.gz api
+        tar -czf release-${{ env.RELEASE_VERSION }}.linux-arm64.tar.gz webapp
         CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -o webapp
-        tar -czf release-${{ env.RELEASE_VERSION }}.darwin-amd64.tar.gz api
+        tar -czf release-${{ env.RELEASE_VERSION }}.darwin-amd64.tar.gz webapp
         ls -la
     - name: Upload Artifact
       uses: actions/upload-artifact@v2
