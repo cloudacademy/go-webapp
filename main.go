@@ -17,24 +17,20 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func getSHA(c echo.Context) error {
-	var data string
+var s3Bucket string
+var filePath string
 
-	if s3Bucket != "" {
-		bucket := aws.String(s3Bucket)
-		// Get the list of items
-		resp, err := s3Svc.ListObjectsV2(&s3.ListObjectsV2Input{Bucket: bucket})
-		if err != nil {
-			log.Fatal(err)
-		}
+var s3Svc *s3.S3
 
-		/*
-			if (len(resp.Contents) == 0) {
-				fmt.Println("[ERROR] No files in bucket. ")
-				os.Exit(0)
-			}
-		*/
+func getLatestFileContentFromS3Bucket() string {
+	bucket := aws.String(s3Bucket)
 
+	resp, err := s3Svc.ListObjectsV2(&s3.ListObjectsV2Input{Bucket: bucket})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if len(resp.Contents) > 0 {
 		mostRecentObj := *resp.Contents[0]
 		for _, item := range resp.Contents {
 			if item.LastModified.After(*mostRecentObj.LastModified) {
@@ -56,32 +52,51 @@ func getSHA(c echo.Context) error {
 			log.Fatal(err)
 		}
 
-		data = buf.String()
+		return buf.String()
 
-	} else if filePath != "" {
-		//read from filepath
-		files, _ := ioutil.ReadDir(filePath)
-		var newestFile string
-		var newestTime int64 = 0
-		for _, f := range files {
-			fi, err := os.Stat(fmt.Sprintf("%s/%s", filePath, f.Name()))
-			if err != nil {
-				fmt.Println(err)
-			}
+	} else {
+		return "empty"
+	}
+}
+
+func getLatestFileContentFromFileSystem() string {
+	files, _ := ioutil.ReadDir(filePath)
+
+	var newestFile string
+	var newestTime int64 = 0
+
+	for _, f := range files {
+		fi, err := os.Stat(fmt.Sprintf("%s/%s", filePath, f.Name()))
+		if err != nil {
+			fmt.Println(err)
+		} else {
 			currTime := fi.ModTime().Unix()
 			if currTime > newestTime {
 				newestTime = currTime
 				newestFile = f.Name()
 			}
 		}
+	}
 
-		content, err := ioutil.ReadFile(fmt.Sprintf("%s/%s", filePath, newestFile))
-		if err != nil {
-			fmt.Println(err)
-		}
-
-		data = string(content)
+	content, err := ioutil.ReadFile(fmt.Sprintf("%s/%s", filePath, newestFile))
+	if err != nil {
+		fmt.Println(err)
 	} else {
+		return string(content)
+	}
+
+	return "empty"
+}
+
+func getSHA(c echo.Context) error {
+	var data string
+
+	if s3Bucket != "" {
+		data = getLatestFileContentFromS3Bucket()
+	} else if filePath != "" {
+		data = getLatestFileContentFromFileSystem()
+	} else {
+		//neither S3 or Filepath environment vars set
 		return errors.New("location of sha256 files unknown")
 	}
 
@@ -105,11 +120,6 @@ func ok(c echo.Context) error {
 	return c.String(http.StatusOK, "ok!")
 }
 
-var s3Bucket string
-var filePath string
-
-var s3Svc *s3.S3
-
 func init() {
 	s3Bucket = os.Getenv("S3Bucket")
 	filePath = os.Getenv("FilePath")
@@ -132,9 +142,10 @@ func init() {
 func main() {
 	e := echo.New()
 
-	e.GET("/ok", ok)
+	e.GET("/", getSHA)
 	e.GET("/sha256", getSHA)
 	e.GET("/thrash", thrash)
+	e.GET("/ok", ok)
 
 	e.Logger.Fatal(e.Start(":8080"))
 }
