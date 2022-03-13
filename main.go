@@ -108,7 +108,7 @@ func thrash(c echo.Context) error {
 	c.Response().Header().Add("Content-Type", "text/plain")
 
 	var x float64 = 0.0001
-	for i := 0; i <= 1000000000; i++ {
+	for i := 0; i <= 1000000; i++ {
 		x += math.Sqrt(x)
 	}
 
@@ -122,7 +122,7 @@ func ok(c echo.Context) error {
 
 func version(c echo.Context) error {
 	c.Response().Header().Add("Content-Type", "text/plain")
-	return c.String(http.StatusOK, "v1.0.6\n")
+	return c.String(http.StatusOK, "v1.0.7\n")
 }
 
 func init() {
