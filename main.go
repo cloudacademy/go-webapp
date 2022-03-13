@@ -101,14 +101,14 @@ func getSHA(c echo.Context) error {
 	}
 
 	c.Response().Header().Add("Content-Type", "text/plain")
-	return c.String(http.StatusOK, data)
+	return c.String(http.StatusOK, data+"\n")
 }
 
 func thrash(c echo.Context) error {
 	c.Response().Header().Add("Content-Type", "text/plain")
 
 	var x float64 = 0.0001
-	for i := 0; i <= 1000000; i++ {
+	for i := 0; i <= 1000000000; i++ {
 		x += math.Sqrt(x)
 	}
 
@@ -117,7 +117,12 @@ func thrash(c echo.Context) error {
 
 func ok(c echo.Context) error {
 	c.Response().Header().Add("Content-Type", "text/plain")
-	return c.String(http.StatusOK, "ok!")
+	return c.String(http.StatusOK, "ok!\n")
+}
+
+func version(c echo.Context) error {
+	c.Response().Header().Add("Content-Type", "text/plain")
+	return c.String(http.StatusOK, "v1.0.6\n")
 }
 
 func init() {
@@ -145,6 +150,7 @@ func main() {
 	e.GET("/", getSHA)
 	e.GET("/sha256", getSHA)
 	e.GET("/thrash", thrash)
+	e.GET("/version", version)
 	e.GET("/ok", ok)
 
 	e.Logger.Fatal(e.Start(":8080"))
