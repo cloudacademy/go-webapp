@@ -1,4 +1,4 @@
-# Go Example Web App
+# Go Web App
 
 [![Go](https://github.com/cloudacademy/go-webapp/actions/workflows/go.yml/badge.svg)](https://github.com/cloudacademy/go-webapp/actions/workflows/go.yml)
 
