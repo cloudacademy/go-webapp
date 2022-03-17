@@ -1,10 +1,10 @@
 module github.com/cloudacademy/go-webapp
 
-go 1.17
+go 1.18
 
 require (
-	github.com/aws/aws-sdk-go v1.43.9
-	github.com/labstack/echo/v4 v4.6.3
+	github.com/aws/aws-sdk-go v1.43.20
+	github.com/labstack/echo/v4 v4.7.2
 )
 
 require (
